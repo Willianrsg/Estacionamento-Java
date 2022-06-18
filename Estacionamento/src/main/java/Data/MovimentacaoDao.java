@@ -10,7 +10,6 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import javax.swing.JOptionPane;
 
@@ -24,6 +23,7 @@ public class MovimentacaoDao {
     Connection conn;
     Statement st;
     
+        
     public boolean conectar(){
         
         try {
@@ -42,22 +42,27 @@ public class MovimentacaoDao {
     
     public boolean salvar(Movimentacao movimentacao){
         
-        DateFormat formatdata = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat formataData = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat formataHora = new SimpleDateFormat("HH:mm");
+        
         
         try {
             String sql;
-           
+                   //INSERT INTO tbl_movimentacao ( placa, modelo, data_entrada, hora_entrada) 
+                   //VALUES ('gho-9087', 'Fusion', 2022-06-17, '12:01')    
             sql = "INSERT INTO tbl_movimentacao ( placa, modelo, data_entrada) VALUES('"
                     + movimentacao.getPlaca() + "','"
                     + movimentacao.getModelo() +"','"
-                    + formatdata.format(movimentacao.getData_entrada()) 
-                + "')";
+                    + formataData.format(movimentacao.getData_entrada())+"'"
+                    + ")";
+                    //+"')";
             
             st.executeUpdate(sql);
              
             return true;
             
         } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null,"Erro no insert "+ex, "ERRO", JOptionPane.ERROR_MESSAGE);
             return false;
         }
     
@@ -73,9 +78,6 @@ public class MovimentacaoDao {
     
     
     public List<Movimentacao> listar(){
-        
-        Date data = new Date();
-        SimpleDateFormat formatdata = new SimpleDateFormat("dd/MM/yyyy");//15/04/2010
         
         List<Movimentacao> movimentacoes = new ArrayList<>();
         
@@ -94,7 +96,9 @@ public class MovimentacaoDao {
                 movimentacao.setPlaca(rs.getString("placa"));
                 movimentacao.setModelo(rs.getString("modelo"));
                 movimentacao.setData_entrada(rs.getDate("data_entrada"));
-                //movimentacao.setData_entrada(Date((formatdata.format(rs.getDate("data_entrada")))));
+                movimentacao.setHora_entrada(rs.getTime("hora_entrada"));
+             
+                
                 
                 movimentacoes.add(movimentacao);
             }
@@ -113,7 +117,7 @@ public class MovimentacaoDao {
         
         try {
             //Objeto connection onde estamos conectando com o banco de dados
-            Connection conn = Conexao.getConnection();
+            conn = Conexao.getConnection();
             PreparedStatement pstm = null;
             
             pstm = conn.prepareStatement("UPDATE tbl_movimentacao SET placa=?, modelo=? WHERE id_movimentacao=? ");
@@ -137,6 +141,8 @@ public class MovimentacaoDao {
     public void saida(Movimentacao movimentacao){
         
     }
+    
+  
 }
 
 

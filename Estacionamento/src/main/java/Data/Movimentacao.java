@@ -2,6 +2,7 @@
 package Data;
 
 
+import java.sql.Time;
 import java.util.Date;
 
 /**
@@ -13,10 +14,12 @@ public class Movimentacao {
     private String placa;
     private String modelo;
     private Date data_entrada;
+    private Time hora_entrada;
     //private Date data_saida;
    // private Date tempo;
    // private boolean valor_pago;
-       
+
+        
     
     //Metodo construtor
     public Movimentacao(){
@@ -58,6 +61,14 @@ public class Movimentacao {
 
     public void setData_entrada(Date data_entrada) {
         this.data_entrada = data_entrada;
+    }
+    
+    public Time getHora_entrada() {
+        return hora_entrada;
+    }
+
+    public void setHora_entrada(Time hora_entrada) {
+        this.hora_entrada = hora_entrada;
     }
     /*
     public Date getData_saida() {

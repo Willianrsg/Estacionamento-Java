@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package com.mycompany.estacionamento;
 
 import DB.Conexao;
@@ -10,16 +6,12 @@ import Data.MovimentacaoDao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
-
+import java.sql.Time;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalTime;
 import java.util.Date;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -33,17 +25,19 @@ public final class TelaPrincipal extends javax.swing.JFrame {
     Statement st = null;
     ResultSet rs = null;
     
+    Date data = new Date();
+    DateFormat formataData = DateFormat.getDateInstance(DateFormat.SHORT);
+    DateFormat formataHora = DateFormat.getTimeInstance(DateFormat.SHORT);
+    
+    Movimentacao m = new Movimentacao();
+    MovimentacaoDao dao = new MovimentacaoDao();
+    
     public TelaPrincipal() {
         initComponents();
         carregaTabela();
         
-        Date data = new Date();
-       
-        Date hora = new Date();
-        DateFormat formata = DateFormat.getDateInstance(DateFormat.SHORT);
-        DateFormat formata_hora = DateFormat.getTimeInstance(DateFormat.SHORT);
-        txtData_entrada.setText(formata.format(data));
-        txtHora_entrada.setText(formata_hora.format(hora));
+        txtData_entrada.setText(formataData.format(data));
+        txtHora_entrada.setText(formataHora.format(data));
     }
     
     @SuppressWarnings("unchecked")
@@ -53,9 +47,10 @@ public final class TelaPrincipal extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel1 = new javax.swing.JPanel();
+        jpTabela = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         TabelaMovimentacao = new javax.swing.JTable();
+        jPanel1 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         placa = new javax.swing.JTextField();
@@ -106,7 +101,7 @@ public final class TelaPrincipal extends javax.swing.JFrame {
 
             },
             new String [] {
-                "COD", "PLACA", "VEICULO", "DATA DE ENTRADA"
+                "COD", "PLACA", "VEICULO", "DATA DE ENTRADA", "HORA DA ENTRADA"
             }
         ));
         TabelaMovimentacao.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -116,20 +111,37 @@ public final class TelaPrincipal extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(TabelaMovimentacao);
 
+        javax.swing.GroupLayout jpTabelaLayout = new javax.swing.GroupLayout(jpTabela);
+        jpTabela.setLayout(jpTabelaLayout);
+        jpTabelaLayout.setHorizontalGroup(
+            jpTabelaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jpTabelaLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 921, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jpTabelaLayout.setVerticalGroup(
+            jpTabelaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jpTabelaLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("VEICULOS ESTACIONADOS", jpTabela);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 823, Short.MAX_VALUE)
+            .addGap(0, 933, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(0, 2, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGap(0, 343, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("VEICULOS ESTACIONADOS", jPanel1);
+        jTabbedPane1.addTab("tab2", jPanel1);
 
         jPanel4.setBackground(new java.awt.Color(204, 204, 204));
         jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -268,6 +280,11 @@ public final class TelaPrincipal extends javax.swing.JFrame {
         });
 
         btnSaida.setText("SAÍDA");
+        btnSaida.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaidaActionPerformed(evt);
+            }
+        });
 
         btnEditar.setText("EDITAR");
         btnEditar.addActionListener(new java.awt.event.ActionListener() {
@@ -283,7 +300,7 @@ public final class TelaPrincipal extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addComponent(btnEntrada, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(107, 107, 107)
+                .addGap(168, 168, 168)
                 .addComponent(btnEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnSaida, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -311,7 +328,7 @@ public final class TelaPrincipal extends javax.swing.JFrame {
                     .addComponent(jTabbedPane1)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(43, Short.MAX_VALUE))
+                .addContainerGap(39, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -323,35 +340,44 @@ public final class TelaPrincipal extends javax.swing.JFrame {
                 .addGap(3, 3, 3)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(173, 173, 173))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 369, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(46, 46, 46))
         );
 
-        setSize(new java.awt.Dimension(888, 650));
+        setSize(new java.awt.Dimension(994, 720));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnEntradaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEntradaActionPerformed
-
-        DateFormat formatdata = new SimpleDateFormat("dd/MM/yyyy");
         
         MovimentacaoDao dao;
+       
         boolean status;
         
         Movimentacao movimentacao = new Movimentacao();
         
         movimentacao.setPlaca(placa.getText());
         movimentacao.setModelo(modelo.getText());
-        
         try {
-            movimentacao.setData_entrada(formatdata.parse(txtData_entrada.getText()));
+            movimentacao.setData_entrada(formataData.parse(txtData_entrada.getText()));
         } catch (ParseException ex) {
             JOptionPane.showMessageDialog(null,"Erro ao salvar data: "+ex, "ERRO", JOptionPane.ERROR_MESSAGE);
         }
         
+        /*
+        try {
+            movimentacao.setHora_entrada((Time) formataHora.parse(txtHora_entrada.getText()));
+            
+        } catch (ParseException ex) {
+            JOptionPane.showMessageDialog(null,"Erro ao salvar hora: "+ex, "ERRO", JOptionPane.ERROR_MESSAGE);
+        }
+        */
+        
         dao = new MovimentacaoDao();
         
+        
         status = dao.conectar();
+        
         if (status == false){
             JOptionPane.showMessageDialog(null, "Erro na conexão com o banco de dados!");
         } else {
@@ -365,31 +391,12 @@ public final class TelaPrincipal extends javax.swing.JFrame {
         }
         
         carregaTabela();
+        limpaCampos();
 
     }//GEN-LAST:event_btnEntradaActionPerformed
 
-    private void TabelaMovimentacaoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TabelaMovimentacaoMouseClicked
-        Date data = new Date();
-        SimpleDateFormat formatdata = new SimpleDateFormat("dd/MM/yyyy");//15/04/2010
-        SimpleDateFormat formathora = new SimpleDateFormat("hh:MM");//08:00:00
-        
-        Movimentacao m = new Movimentacao();
-        MovimentacaoDao dao = new MovimentacaoDao();
-        
-        int index = TabelaMovimentacao.getSelectedRow();
-        
-        m = dao.listar().get(index);
-        
-        txtCod.setText(String.valueOf(m.getId_movimentacao()));
-        placa.setText(m.getPlaca());
-        modelo.setText(m.getModelo());
-        txtData_entrada.setText(String.valueOf(formatdata.format(m.getData_entrada())));
-        txtHora_entrada.setText(String.valueOf(formathora.format(m.getData_entrada())));
-       
-        
-    }//GEN-LAST:event_TabelaMovimentacaoMouseClicked
-
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
+        
         Movimentacao m = new Movimentacao();
         MovimentacaoDao dao = new MovimentacaoDao();
         
@@ -405,6 +412,7 @@ public final class TelaPrincipal extends javax.swing.JFrame {
         dao.alterar(m);//Faz a alteração no banco de dados
         
         carregaTabela();
+        limpaCampos();
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void placaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_placaActionPerformed
@@ -428,6 +436,25 @@ public final class TelaPrincipal extends javax.swing.JFrame {
     private void txtTempoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTempoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtTempoActionPerformed
+
+    private void btnSaidaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaidaActionPerformed
+        limpaCampos();        // TODO add your handling code here:
+    }//GEN-LAST:event_btnSaidaActionPerformed
+
+    private void TabelaMovimentacaoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TabelaMovimentacaoMouseClicked
+
+        int index = TabelaMovimentacao.getSelectedRow();
+
+        m = dao.listar().get(index);
+
+        //Carrega os Campos para ediçao ou saida do veiculo
+        txtCod.setText(String.valueOf(m.getId_movimentacao()));
+        placa.setText(m.getPlaca());
+        modelo.setText(m.getModelo());
+        txtData_entrada.setText(formataData.format(m.getData_entrada()));
+        txtHora_entrada.setText(formataHora.format(m.getHora_entrada()));
+
+    }//GEN-LAST:event_TabelaMovimentacaoMouseClicked
 
     /**
      * @param args the command line arguments
@@ -471,10 +498,11 @@ public final class TelaPrincipal extends javax.swing.JFrame {
         TabelaMovimentacao.getColumnModel().getColumn(1).setPreferredWidth(40);
         TabelaMovimentacao.getColumnModel().getColumn(2).setPreferredWidth(80);
         TabelaMovimentacao.getColumnModel().getColumn(3).setPreferredWidth(80);
+        TabelaMovimentacao.getColumnModel().getColumn(4).setPreferredWidth(80);
         
         try{
             
-           Connection conn = Conexao.getConnection();
+            Connection conn = Conexao.getConnection();
             PreparedStatement  pstm;
             ResultSet rs;
             
@@ -487,17 +515,55 @@ public final class TelaPrincipal extends javax.swing.JFrame {
                     rs.getInt(1),
                     rs.getString(2),
                     rs.getString(3),
-                    rs.getDate(4)
+                    rs.getDate(4),
+                    rs.getTime(5)
                     
                 });
             }
             Conexao.closeConnection(conn, pstm, rs);
             
             
-        }catch(Exception ErroSql){
+        }catch(SQLException ErroSql){
             JOptionPane.showMessageDialog(null,"Erro ao carregar a tabela: "+ErroSql, "ERRO", JOptionPane.ERROR_MESSAGE);
         }
+        
     }
+    
+    public void limpaCampos(){
+    
+        txtCod.setText("");
+        placa.setText("");
+        modelo.setText("");
+        txtData_entrada.setText(formataData.format(data));
+        txtHora_entrada.setText(formataHora.format(data));
+        
+      
+}
+    
+    /*
+    public void BotaoRegistraEntrada(){
+        REGISTRO_ENTRADA_SAIDA.setVisible(true);
+        BotaoSalvar.setVisible(true);
+        BotaoSalvar.setText("CONCLUIR ENTRADA");
+        PainelReceber.setVisible(false);
+        BotaoExcluir.setVisible(false);
+        
+        BotaoPesquisar.setVisible(false);
+        PainelDetalhes.setVisible(true);
+        TestoCodigo.setVisible(false);
+        Cod.setVisible(false);
+        BotaoExcluir.setEnabled(false);
+        
+        DataEntrada.setText(formataData.format(m.getData_entrada()));
+        HoraEntrada.setText(formataHora.format(m.getHora_entrada()));
+        //DataSaida.setText(formataData.format(m.getData_saida()));
+        //HoraSaida.SetText(formataHora.format(m.getHora_saida()));
+        
+        Placa.setText("");
+        Cod.setText("");
+        Modelo.setText("");
+    }
+    */
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable TabelaMovimentacao;
@@ -518,6 +584,7 @@ public final class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JPanel jpTabela;
     private javax.swing.JTextField modelo;
     private javax.swing.JTextField placa;
     private javax.swing.JTextField txtCod;
